@@ -1,6 +1,7 @@
+import './add-page.css';
 import React from 'react';
 
-export class AddPage extends React.Component {
+export class AddPage extends React.PureComponent {
 	constructor(props) {
 		super(props);
 		this._refName = React.createRef();
@@ -12,27 +13,56 @@ export class AddPage extends React.Component {
 	render() {
 		return (
 			<div className="add-page">
-				<label>
-					<input type="text" ref={this._refName}/>
-				</label>
-				<label>
-					<textarea ref={this._refDescr}/>
-				</label>
-				<label>
-					<input type="number" min={0} max={3} ref={this._refPriority}/>
-				</label>
-				<label>
-					<input type="datetime" ref={this._refTimeToComplete}/>
-				</label>
-				<div>
-					<input type="button" value="Add" onClick={this._onSave.bind(this)}/>
-				</div>
+				<fieldset className="fieldset">
+					<legend>Task details</legend>
+					<div className="row">
+						<label className="label">Name</label>
+						<span className="value">
+							<input type="text" ref={this._refName}/>
+						</span>
+					</div>
+					<div className="row">
+						<label className="label">Description</label>
+						<span className="value">
+							<textarea ref={this._refDescr}/>
+						</span>
+					</div>
+					<div className="row">
+						<label className="label">Priority</label>
+						<span className="value">
+							<input type="number" min={0} max={3} ref={this._refPriority}/>
+						</span>
+					</div>
+					<div className="row">
+						<label className="label">Time to complete</label>
+						<span className="value">
+							<input
+								type="text"
+								placeholder="dd.HH:mm:ss"
+								ref={this._refTimeToComplete}
+							/>
+						</span>
+					</div>
+					<div className="row">
+						<label className="label"/>
+						<span className="value">
+							<input
+								type="button"
+								value="Add"
+								disabled={this.props.saving}
+								onClick={this._onSave.bind(this)}
+							/>
+						</span>
+					</div>
+					{this.props.error && (
+						<div className="error">{this.props.error}</div>
+					)}
+				</fieldset>
 			</div>
 		);
 	}
 
-	_onSave(ev) {
-		ev.currentTarget.setAttribute('disabled', true);
+	_onSave() {
 		const task = {
 			name: this._refName.current.value,
 			description: this._refDescr.current.value,

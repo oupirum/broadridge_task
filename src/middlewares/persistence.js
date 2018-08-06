@@ -1,15 +1,16 @@
 import {
-	detailsFetching,
+	fetchingDetails,
 	detailsNotFound,
 	detailsReceived,
 	endReached,
-	tasksFetching,
+	fetchingTasks,
 	tasksReceived,
-	taskSaving,
-	taskSavingFailed,
+	savingTask,
+	savingTaskFailed,
+	taskSaved,
 } from '../actions';
-import * as moment from 'moment';
 import {hashHistory} from 'react-router';
+import * as moment from 'moment';
 import * as firebase from 'firebase';
 
 firebase.initializeApp({
@@ -19,20 +20,6 @@ firebase.initializeApp({
 	storageBucket: "broadridge-task.appspot.com",
 });
 const db = firebase.database();
-
-// for (let i = 0; i < 100; i++) {
-// 	const task = {
-// 		name: 'Task ' + i,
-// 		description: 'qeqweqweq qe qeq eqweqwe qeqeq',
-// 		priority: 1,
-// 		timeAdded: Math.round(Date.now() / 1000),
-// 		timeComplete: Math.round(Date.now() / 1000 + Math.random() * 604800),
-// 		_toSort: Date.now(),
-// 	};
-// 	const ref = db.ref('tasks').push();
-// 	task.id = ref.key;
-// 	ref.set(task);
-// }
 
 const PAGE_SIZE = 20;
 
@@ -63,7 +50,8 @@ export function sortListMiddleware(store) {
 }
 
 function fetch(store, sortBy, sortDir, nextPage) {
-	store.dispatch(tasksFetching());
+	console.debug(sortBy, sortDir, nextPage);
+	store.dispatch(fetchingTasks());
 
 	let query = db.ref('tasks')
 		.orderByChild(sortBy);
@@ -98,7 +86,6 @@ function fetch(store, sortBy, sortDir, nextPage) {
 			}
 
 			const tasks = childs.map((child) => child.val());
-			console.debug('fetched', tasks.length, nextPage);
 			store.dispatch(tasksReceived(tasks, sortBy, sortDir, nextPage));
 		});
 }
@@ -107,7 +94,7 @@ export function fetchDetailsMiddleware(store) {
 	return (next) => (action) => {
 		if (action.type === 'SELECT_TASK') {
 			const taskId = action.payload;
-			store.dispatch(detailsFetching(taskId));
+			store.dispatch(fetchingDetails(taskId));
 
 			db.ref('tasks').child(taskId).once('value')
 				.then((snap) => {
@@ -129,7 +116,7 @@ export function fetchDetailsMiddleware(store) {
 export function saveTaskMiddleware(store) {
 	return (next) => (action) => {
 		if (action.type === 'SAVE_TASK') {
-			store.dispatch(taskSaving());
+			store.dispatch(savingTask());
 
 			const task = {
 				...action.payload,
@@ -140,7 +127,7 @@ export function saveTaskMiddleware(store) {
 			const ttc = task.timeToComplete;
 			const ttcMatch = ttc.match(/^(\d+)\.(\d+):(\d+):(\d+)$/);
 			if (!ttcMatch) {
-				store.dispatch(taskSavingFailed());
+				store.dispatch(savingTaskFailed('Wrong format for time to complete'));
 				return next(action);
 			}
 
@@ -156,6 +143,7 @@ export function saveTaskMiddleware(store) {
 
 			ref.set(task)
 				.then(() => {
+					store.dispatch(taskSaved());
 					hashHistory.push(`/details/${task.id}`);
 				});
 		}
@@ -163,7 +151,7 @@ export function saveTaskMiddleware(store) {
 	}
 }
 
-export function deleteTaskMiddleware(store) {
+export function deleteTaskMiddleware() {
 	return (next) => (action) => {
 		if (action.type === 'DELETE_TASK') {
 			const taskId = action.payload;

@@ -1,0 +1,28 @@
+.details {
+
+}
+
+.details .fieldset {
+    border: 1px solid #000;
+    margin: 0;
+    margin-top: 20px;
+}
+
+.row {
+    display: flex;
+}
+
+.row .label {
+    display: block;
+    padding: 10px;
+    width: 100px;
+}
+
+.row .value {
+    display: block;
+    padding: 10px;
+}
+
+.row .value.description {
+    white-space: pre;
+}

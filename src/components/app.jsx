@@ -5,17 +5,12 @@ import Details from '../containers/details';
 import AddPage from '../containers/add-page';
 import {Router, Route, Link, hashHistory} from 'react-router';
 
-export class App extends React.Component {
-	componentDidMount() {
-		console.debug(this.props);
-		console.debug(this.state);
-	}
-
+export class App extends React.PureComponent {
 	render() {
 		const navMenu = (
-			<div>
-				<Link to="/" activeClassName="active">Tasks List</Link>
-				<Link to="/add" activeClassName="active">Add new task</Link>
+			<div className="nav-menu">
+				<Link className="link" to="/" activeClassName="active">Tasks List</Link>
+				<Link className="link" to="/add" activeClassName="active">Add new task</Link>
 			</div>
 		);
 		return (

@@ -1,13 +1,10 @@
 import './list-page.css';
 import React from 'react';
-import {ListItem} from './list-item';
-import {InfiniteLoader, List} from 'react-virtualized'
+import {Counter} from './counter';
+import {InfiniteLoader, Table, Column} from 'react-virtualized';
+import * as moment from 'moment';
 
 export class ListPage extends React.PureComponent {
-	constructor(props) {
-		super(props);
-	}
-
 	componentDidMount() {
 		if (this.props.tasks.length === 0) {
 			this.props.loadNextPage();
@@ -17,33 +14,82 @@ export class ListPage extends React.PureComponent {
 	render() {
 		return (
 			<div className="list-page">
-				<div className="filter-field">
-					<input type="text" onKeyDown={this._onKeyDown.bind(this)}/>
-					<input type="button" onClick={this._onSort.bind(this)}/>
-				</div>
-				<div className="list-header">
-					<div className="column">Name</div>
-					<div className="column">Priority</div>
-					<div className="column">Added</div>
-					<div className="column">Time to complete</div>
-					<div className="column">Action</div>
-				</div>
 				<InfiniteLoader
-					className="list"
 					isRowLoaded={this._isRowLoaded.bind(this)}
 					loadMoreRows={this._loadMoreRows.bind(this)}
 					rowCount={this._rowCount()}
+
 				>
 					{({onRowsRendered, registerChild}) => (
-						<List
+						<Table
+							className="list"
 							ref={registerChild}
-							rowRenderer={this._rowRenderer.bind(this)}
+							rowGetter={this._rowRenderer.bind(this)}
 							onRowsRendered={onRowsRendered}
 							rowCount={this._rowCount()}
-							width={1200}
+							width={1000}
 							height={300}
 							rowHeight={35}
-						/>
+							headerHeight={25}
+							onRowClick={this._onRowClick.bind(this)}
+							onHeaderClick={this._onHeaderClick.bind(this)}
+							headerClassName="header"
+							rowClassName="list-row"
+						>
+							<Column
+								label={(
+									<span className="column">
+										Name {this._renderSortArrow('name')}
+									</span>
+								)}
+								cellDataGetter={({rowData}) => rowData.name}
+								dataKey="name"
+								width={200}
+								className="column"
+							/>
+							<Column
+								label={(
+									<span className="column">
+										Priority {this._renderSortArrow('priority')}
+									</span>
+								)}
+								cellDataGetter={({rowData}) => rowData.priority}
+								dataKey="priority"
+								width={200}
+								className="column"
+							/>
+							<Column
+								label={(
+									<span className="column">
+										Added {this._renderSortArrow('timeAdded')}
+									</span>
+								)}
+								cellDataGetter={({rowData}) => rowData.timeAdded}
+								dataKey="timeAdded"
+								width={200}
+								className="column"
+							/>
+							<Column
+								label={(
+									<span className="column">Time to complete</span>
+								)}
+								cellDataGetter={({rowData}) => rowData.ttc}
+								cellRenderer={({cellData}) => cellData}
+								dataKey="ttc"
+								width={200}
+								className="column"
+							/>
+							<Column
+								label={(
+									<span className="column">Action</span>
+								)}
+								cellDataGetter={({rowData}) => rowData.action}
+								cellRenderer={({cellData}) => cellData}
+								dataKey="action"
+								width={200}
+								className="column"
+							/>
+						</Table>
 					)}
 				</InfiniteLoader>
 				{this.props.children}
@@ -51,44 +97,39 @@ export class ListPage extends React.PureComponent {
 		);
 	}
 
-	_onKeyDown(ev) {
-		ev.stopPropagation();
-		if (ev.keyCode === 13 && ev.currentTarget.value) {
-			this.props.onFilter(ev.currentTarget.value);
+	_onHeaderClick({dataKey}) {
+		if (['name', 'priority', 'timeAdded'].includes(dataKey)) {
+			if (!this.props.fetching) {
+				this.props.onSort(dataKey, this.props.sortDir === 'asc' ? 'desc' : 'asc');
+			}
 		}
 	}
 
-	_onSort(ev) {
-		this.props.onSort(this.props.sortBy, this.props.sortDir === 'asc' ? 'desc' : 'asc');
+	_renderSortArrow(column) {
+		if (this.props.sortBy === column) {
+			return this.props.sortDir === 'desc' ? '⮝' : '⮟';
+		}
+		return null;
 	}
 
-	_rowRenderer({index, key, style}) {
-		let content;
+	_onRowClick({rowData}) {
+		this.props.onSelectTask(rowData.task);
+	}
+
+	_rowRenderer({index}) {
 		if (index < this.props.tasks.length) {
 			const task = this.props.tasks[index];
-			if (this.props.filter && !task.name.includes(this.props.filter)) {
-				return null;
-			}
-			content = (
-				<ListItem
-					task={task}
-					onDelete={this.props.onDelete}
-					onClick={this.props.onSelectTask}
-					isSelected={this.props.selectedTask === task.id}
-				/>
-			);
+			return {
+				task: task,
+				name: task.name,
+				priority: task.priority,
+				timeAdded: moment.unix(task.timeAdded).format('YYYY-MM-DD HH:mm:ss'),
+				ttc: <Counter task={task}/>,
+				action: <button onClick={() => this.props.onDelete(task)}>Delete</button>
+			};
 		} else {
-			content = <div className="loading">Loading...</div>;
+			return {name: 'Loading...'};
 		}
-		return (
-			<div
-				className="list-row-wrap"
-				style={style}
-				key={key}
-			>
-				{content}
-			</div>
-		);
 	}
 
 	_isRowLoaded({index}) {
@@ -103,11 +144,5 @@ export class ListPage extends React.PureComponent {
 		return this.props.endReached ?
 			this.props.tasks.length :
 			this.props.tasks.length + 1;
-	}
-
-	_onScroll(ev) {
-		// if (ev.currentTarget.clientHeight + ev.currentTarget.scrollTop >= ev.currentTarget.scrollHeight) {
-		// 	this.props.loadNextPage();
-		// }
 	}
 }

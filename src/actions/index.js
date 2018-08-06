@@ -5,9 +5,9 @@ export function fetchNextPage() {
 	};
 }
 
-export function tasksFetching() {
+export function fetchingTasks() {
 	return {
-		type: 'TASKS_FETCHING',
+		type: 'FETCHING_TASKS',
 	};
 }
 
@@ -20,13 +20,6 @@ export function tasksReceived(tasks, sortBy, sortDir, nextPage) {
 			sortDir,
 			nextPage,
 		},
-	};
-}
-
-export function filter(word) {
-	return {
-		type: 'FILTER_LIST',
-		payload: word,
 	};
 }
 
@@ -60,9 +53,9 @@ export function selectTask(id) {
 	};
 }
 
-export function detailsFetching() {
+export function fetchingDetails() {
 	return {
-		type: 'DETAILS_FETCHING',
+		type: 'FETCHING_DETAILS',
 	};
 }
 
@@ -86,22 +79,21 @@ export function saveTask(task) {
 	};
 }
 
-export function taskSaving() {
+export function savingTask() {
 	return {
-		type: 'TASK_SAVING',
+		type: 'SAVING_TASK',
 	};
 }
 
-export function taskSavingFailed(error) {
+export function savingTaskFailed(error) {
 	return {
-		type: 'TASK_SAVING_FAILED',
+		type: 'SAVING_TASK_FAILED',
 		payload: error,
 	};
 }
 
-export function taskSaved(task) {
+export function taskSaved() {
 	return {
 		type: 'TASK_SAVED',
-		payload: task,
 	};
 }

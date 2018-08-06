@@ -1,13 +1,15 @@
+import {connect} from 'react-redux';
 import {AddPage} from '../components/add-page';
 import {saveTask} from '../actions';
-import {connect} from 'react-redux';
 
-function mapStateToProps(state, ownProps) {
+function mapStateToProps(state) {
 	return {
+		saving: state.add.saving,
+		error: state.add.savingError,
 	};
 }
 
-function mapDispatchToProps(dispatch, ownProps) {
+function mapDispatchToProps(dispatch) {
 	return {
 		onSave: (task) => {
 			dispatch(saveTask(task));

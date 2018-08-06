@@ -1,5 +1,25 @@
 .app {
     padding: 10px;
     margin: auto;
-    max-width: 1200px;
+    max-width: 1000px;
+}
+
+.nav-menu {
+    display: flex;
+}
+
+.nav-menu .link {
+    padding: 10px;
+    display: block;
+    text-decoration: none;
+    color: #000;
+}
+
+.nav-menu .link:hover {
+    background: #f8f8f8;
+}
+
+.nav-menu .link.active {
+    background: #00aeee;
+    color: #fff;
 }
